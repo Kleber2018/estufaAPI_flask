@@ -1,6 +1,5 @@
 import mariadb
 import sys
-import json
 
 # Instantiate Connection
 try:
@@ -31,12 +30,15 @@ def hello_world():
 @app.route('/medicao')
 def medicao():
 
-    cur.execute("SELECT Identificacao FROM Medicao WHERE id_medicao=?", (7,))
-    for Identificacao in cur:
-        idem = Identificacao
-        print(f"Identificacao: {Identificacao}")
-    print(idem)
-    return f"Identificacao: {idem}"
+    cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, Data FROM Medicao"
+                " WHERE year(Data)=year(now()) and month(Data)=month(now()) LIMIT 20")
+    retornoBD = []
+    for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
+        retornoBD.append(
+            {'id': id_medicao, 'Identificação': Identificacao, 'Temperatura': Temperatura, 'Umidade': Umidade, 'Data': Data})
+    print(retornoBD)
+    return f"Identificacao: {retornoBD}"
+
 
 @app.route('/medicoes')
 def medicoes():
