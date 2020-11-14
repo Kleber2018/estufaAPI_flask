@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=APIestufa autostart
+Comment=Inicializar a API para acessar dados
+NoDisplay=true
+Exec=python3 /home/pi/PycharmProjects/estufaAPI_flask/app.py
+StartupNotify=false
+Terminal=true
+Hidden=false
+Name[en_GB]=APIestufa autostart
