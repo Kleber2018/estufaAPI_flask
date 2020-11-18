@@ -1,5 +1,6 @@
 import mariadb
 import sys
+import json
 
 # Instantiate Connection
 try:
@@ -35,9 +36,9 @@ def medicao():
     retornoBD = []
     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
         retornoBD.append(
-            {'id': id_medicao, 'Identificação': Identificacao, 'Temperatura': Temperatura, 'Umidade': Umidade, 'Data': Data})
-    print(retornoBD)
-    return f"Identificacao: {retornoBD}"
+           {'id': id_medicao, 'Sensor': Identificacao, 'Temperatura': float(Temperatura), 'Umidade': float(Umidade), 'Data': f"{Data}"})
+
+    return f"{retornoBD}"
 
 
 @app.route('/medicoes')
@@ -45,18 +46,18 @@ def medicoes():
 
     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade FROM Medicao")
     retornoBD = []
-    for id_medicao, Identificacao, Temperatura, Umidade in cur:
-        retornoBD.append({'id': id_medicao, 'Identificação': Identificacao, 'Temperatura': Temperatura, 'Umidade': Umidade})
+    for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
+        retornoBD.append({'id': id_medicao, 'Identificação': Identificacao, 'Temperatura': Temperatura, 'Umidade': Umidade,  'Data': Data})
         print(f"Identificacao: {retornoBD}")
     print(retornoBD)
 
-    return f"Identificacao: {retornoBD}"
+    return f"Identificafddcao: {retornoBD}"
 
 
 
 
-app.run(host='0.0.0.0', port=8080)
+app.run(host='0.0.0.0', port=8081)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8081)
