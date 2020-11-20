@@ -1,5 +1,6 @@
 import mariadb
 import sys
+from flask_cors import CORS
 import json
 
 # Instantiate Connection
@@ -18,9 +19,10 @@ cur = conn.cursor()
 
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-from flask import Flask
+from flask import Flask, jsonify
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route('/teste')
@@ -37,8 +39,8 @@ def medicao():
     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
         retornoBD.append(
            {'id': id_medicao, 'Sensor': Identificacao, 'Temperatura': float(Temperatura), 'Umidade': float(Umidade), 'Data': f"{Data}"})
-
-    return f"{retornoBD}"
+    return jsonify(retornoBD)
+    #return f"{retornoBD}"
 
 
 @app.route('/medicoes')
@@ -56,8 +58,8 @@ def medicoes():
 
 
 
-app.run(host='0.0.0.0', port=8081)
+app.run(host='0.0.0.0', port=8080)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8081)
+    app.run(host='0.0.0.0', port=8080)
