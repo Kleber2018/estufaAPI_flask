@@ -2,6 +2,11 @@
 
 Script para inicializar API para acessar os dados do MariaDB
 
+## Atualizar repositórios
+
+pip install -U flask-cors
+pip install -U mariadb
+
 ## configuração
 
 app.run(host='0.0.0.0', port=8080)
@@ -17,3 +22,18 @@ Para autoexecutar colar o arquivo autorunAPI.desktop da pasta autostart na pasta
 ## Criar access point
 
 https://www.techtudo.com.br/dicas-e-tutoriais/2017/05/aprenda-como-criar-um-access-point-com-o-raspberry-pi.ghtml
+
+
+
+##documentações
+
+Datas no MARIADB:
+https://mariadb.com/kb/en/date_format/
+
+
+gráfico:
+https://www.chartjs.org/docs/latest/charts/line.html
+
+
+Template com flask:
+https://imasters.com.br/desenvolvimento/conhecendo-o-jinja2-um-mecanismo-para-templates-no-flask

@@ -1,0 +1,89 @@
+{% extends "template.html" %}
+<!--criamos um bloco de conteúdo a ser interpretado pelo python-->
+{% block conteudo %}
+    <div style="width:100%;">
+        <canvas id="myChart" value="{{medicoes}}"></canvas>
+    </div>
+    <table class="table table-striped table-responsive table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Temperatura</th>
+                <th>Umidade</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--criamos uma estrutura de repetição com o Jinja2 para preencher nossa tabela com os dados dos pokemons-->
+            {% for medicao in medicoes  %}
+            
+                        <tr>
+                            <td id="medicao">{{ medicao.id }}</td>
+                            <td>{{ medicao.Temperatura }}</td>
+                            <td>{{ medicao.Umidade }}</td>
+                            <td>{{ medicao.Data }}</td>
+                        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        // var m = {{ medicoes | tojson }}
+        // console.log('medicao', m)
+        // console.log({{ umidades | tojson }})
+        // console.log(document.getElementById('myChart').valueOf())
+        // console.log( {{ medicoes | tojson }} )
+
+        var ctx = document.getElementById('myChart');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ dias | tojson }},
+                datasets: [{
+                    label: 'Temperatura',
+                    data: {{ temperaturas | tojson }},
+                    backgroundColor: 'rgb(255,254,254, 0)',
+                    borderColor: 'rgb(13,61,208)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Umidade',
+                    data: {{ umidades | tojson }},
+                    backgroundColor: 'rgb(246,246,245, 0)',
+                    borderColor: 'rgb(193,17,17)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Medições de Temperatura e Umidade'
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                   xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Month'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Value'
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
+
+<!--encerramos o bloco de código a ser interpretado pelo python-->
