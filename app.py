@@ -60,7 +60,7 @@ lista = [pokemon1, pokemon2]
 @app.route('/')
 def index():
     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, DATE_FORMAT(Data, '(%d) %H:%i') FROM Medicao"
-                    " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data LIMIT 20")
+                    " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data DESC LIMIT 20")
     medicoes = []
     temperaturas = []
     umidades = []
@@ -79,7 +79,7 @@ def index():
 @app.route('/medicao')
 def medicao():
     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, Data FROM Medicao"
-                " WHERE year(Data)=year(now()) and month(Data)=month(now()) LIMIT 30")
+                " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data DESC LIMIT 50")
     retornoBD = []
     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
         retornoBD.append(
