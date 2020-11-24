@@ -4,8 +4,10 @@ Script para inicializar API para acessar os dados do MariaDB
 
 ## Atualizar repositórios
 
-pip install -U flask-cors
+
 pip install -U mariadb
+pip3 install Flask_Cors
+pip3 install -U flask-cors
 
 ## configuração
 
@@ -23,6 +25,14 @@ Para autoexecutar colar o arquivo autorunAPI.desktop da pasta autostart na pasta
 
 https://www.techtudo.com.br/dicas-e-tutoriais/2017/05/aprenda-como-criar-um-access-point-com-o-raspberry-pi.ghtml
 
+## Inicialização 
+
+Para inicializar automaticamente inserir com editor Vim o trecho abaixo
+
+Abrir editor vim com o comando: vim /etc/rc.local
+
+
+(sleep 120; python3 /home/pi/PycharmProjects/estufaAPI_flask/app.py) &
 
 
 ##documentações

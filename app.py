@@ -5,6 +5,7 @@ from flask_cors import CORS
 
 #render template: passando o nome do modelo e a variáveis ele vai renderizar o template
 #request: faz as requisições da nosa aplicação
+
 #redirect: redireciona pra outras páginas
 #session: armazena informações do usuário
 #flash:mensagem de alerta exibida na tela
@@ -57,10 +58,10 @@ pokemon2 = Pokemon('Charmander', 'Lagarto', 'Fogo')
 lista = [pokemon1, pokemon2]
 
 #configuração da rota index.
-@app.route('/')
+@app.route('/', methods=['GET', 'OPTIONS'])
 def index():
     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, DATE_FORMAT(Data, '(%d) %H:%i') FROM Medicao"
-                    " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data DESC LIMIT 20")
+                    " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data DESC LIMIT 30")
     medicoes = []
     temperaturas = []
     umidades = []
