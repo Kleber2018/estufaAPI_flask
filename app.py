@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 import mariadb
 import sys
@@ -69,8 +71,10 @@ def index():
     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
         medicoes.append(
            {'id': id_medicao, 'Sensor': Identificacao, 'Temperatura': float(Temperatura), 'Umidade': float(Umidade), 'Data': f"{Data}"})
-        temperaturas.append(float(Temperatura))
-        umidades.append(float(Umidade))
+        #temperaturas.append(float(Temperatura))
+        temperaturas.insert(0, float(Temperatura))
+        umidades.insert(0, float(Umidade))
+        #umidades.append(float(Umidade))
         dias.append(f"{Data}")
 
     return render_template('lista.html', titulo='Medições', medicoes=medicoes, temperaturas=temperaturas, umidades=umidades, dias=dias)
@@ -85,6 +89,7 @@ def medicao():
     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
         retornoBD.append(
            {'id': id_medicao, 'Sensor': Identificacao, 'Temperatura': float(Temperatura), 'Umidade': float(Umidade), 'Data': f"{Data}"})
+
 
 
     return jsonify(retornoBD)
