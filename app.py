@@ -1,19 +1,24 @@
+import time
+time.sleep(10.0)
 from operator import itemgetter
 
 from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
+
 import mariadb
 import sys
-from flask_cors import CORS
+#from flask_cors import CORS
 
 #render template: passando o nome do modelo e a variáveis ele vai renderizar o template
 #request: faz as requisições da nosa aplicação
-
 #redirect: redireciona pra outras páginas
 #session: armazena informações do usuário
 #flash:mensagem de alerta exibida na tela
 #url_for: vai para aonde o redirect indica
+
 app = Flask(__name__)
-CORS(app)
+
+#CORS(app)
+
 # Instantiate Connection
 try:
     conn = mariadb.connect(
@@ -63,7 +68,7 @@ lista = [pokemon1, pokemon2]
 @app.route('/', methods=['GET', 'OPTIONS'])
 def index():
     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, DATE_FORMAT(Data, '(%d) %H:%i') FROM Medicao"
-                    " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data DESC LIMIT 30")
+                    " WHERE year(Data)=year(now()) ORDER BY Data DESC LIMIT 35")
     medicoes = []
     temperaturas = []
     umidades = []
@@ -75,7 +80,7 @@ def index():
         temperaturas.insert(0, float(Temperatura))
         umidades.insert(0, float(Umidade))
         #umidades.append(float(Umidade))
-        dias.append(f"{Data}")
+        dias.insert(0, f"{Data}")
 
     return render_template('lista.html', titulo='Medições', medicoes=medicoes, temperaturas=temperaturas, umidades=umidades, dias=dias)
     #renderizando o template lista e as variáveis desejadas.
@@ -148,7 +153,7 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8080, debug=True)
 
 
 # from flask_cors import CORS
