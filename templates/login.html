@@ -27,7 +27,7 @@
         <h1>Faça seu login</h1>
         <form method="POST" action="{{ url_for('autenticar') }}">
             <input type="hidden" name="proxima" value="{{ proxima or url_for('index') }}">
-            <p><label>Nome da treinadora:</label> <input class="form-control" type="text" name="treinadora" required></p>
+            <p><label>Usuario:</label> <input class="form-control" type="text" name="login" required></p>
             <p><label>Senha:</label> <input class="form-control" type="password" name="senha" required></p>
             <p><button class="btn btn-primary" type="submit">Entrar</button></p>
         </form>

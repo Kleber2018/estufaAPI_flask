@@ -57,6 +57,8 @@ treinadoras = {treinadora1.id: treinadora1,
             treinadora2.id: treinadora2,
             treinadora3.id: treinadora3}
 
+
+
 #base de dados de pokemons
 pokemon1 = Pokemon('Meowth', 'Arranha Gato', 'Normal')
 pokemon2 = Pokemon('Charmander', 'Lagarto', 'Fogo')
@@ -119,22 +121,28 @@ def criar():
     return redirect(url_for('index'))
 #já inclui o novo pokemon na lista e joga na tela inicial
 
+
 #configuração da rota login
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
     return render_template('login.html', proxima=proxima)
 
-#configuração da rota autenticar que verific as credenciais das terinadoras
+
+#configuração da rota autenticar que verifica se existe o usuário no bd
 @app.route('/autenticar', methods=['POST', ])
 def autenticar():
-    if request.form['treinadora'] in treinadoras:
-        treinadora = treinadoras[request.form['treinadora']]
-        if treinadora.senha == request.form['senha']:
-            session['usuario_logado'] = treinadora.id
-            flash(treinadora.nome + ' acesso permitido!')
-            proxima_pagina = request.form['proxima']
-            return redirect(proxima_pagina)
+    cur.execute("SELECT login, Senha, Nome, Telefone, Email, Privilegios FROM Usuario "
+                "WHERE login = %s and Senha = %s", (request.form['login'], request.form['senha'],))
+
+    usuario = cur.fetchall()
+
+    # retorna ('kleber', '1234', 'Kleber Santos', '988572209', 'klebers@alunos.utfpr.edu.br', 'admin')
+    if len(usuario) == 1:
+        session['usuario_logado'] = usuario[0][0]
+        flash(usuario[0][2] + ' acesso permitido!')
+        proxima_pagina = request.form['proxima']
+        return redirect(proxima_pagina)
     else:
         #caso as credenciais não sejam validadas, exibe mensagem de erro e redirecion para o login
         flash('Acesso negado, digite novamente!')
@@ -144,7 +152,7 @@ def autenticar():
 @app.route('/logout')
 def logout():
     session['usuario_logado'] = None
-    flash('Treinadora, logue novamente para cadastrar os pokemons que encontrar!')
+    flash('Não autenticado, necessário efetuar o login')
     return redirect(url_for('index'))
 
 

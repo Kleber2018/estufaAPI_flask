@@ -46,3 +46,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE, DROP
    ON estufa.Medicao
    TO 'kleber'@'localhost';
 
+GRANT SELECT, INSERT, UPDATE, DELETE, DROP
+   ON estufa.Usuario
+   TO 'kleber'@'localhost';
