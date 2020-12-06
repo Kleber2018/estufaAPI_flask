@@ -192,21 +192,24 @@ def login():
 # configuração da rota autenticar que verifica se existe o usuário no bd
 @app.route('/autenticar', methods=['POST', ])
 def autenticar():
+
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
         login = request.form['login'],
-        senha = request.form['Senha'],
+        senha = request.form['senha'],
 
         cur.execute("SELECT login, Senha, Nome, Telefone, Email, Privilegios FROM Usuario "
-                    "WHERE login = %s and Senha = %s", (login.lower(), senha.lower(),))
+                    "WHERE login = %s and Senha = %s", (login[0].lower(), senha[0].lower(),))
         usuario = cur.fetchall()
         cur.close()
         conn.close()
     except mariadb.Error as e:
         print(f"Erro Mariadb: {e}")
-        sys.exit(1)
+        #sys.exit(1)
+        return redirect(url_for('login'))
+        flask(f"erro: {e}")
 
     # retorna ('kleber', '1234', 'Kleber Santos', '988572209', 'klebers@alunos.utfpr.edu.br', 'admin')
     if len(usuario) == 1:
