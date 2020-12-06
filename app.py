@@ -71,16 +71,29 @@ def index():
             # umidades.append(float(Umidade))
             dias.insert(0, f"{Data}")
 
+
+        cur.execute(
+            "SELECT id_alerta, descricao, confirmado, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Alerta"
+            " WHERE 1=1 ORDER BY created DESC LIMIT 10")
+        alertas = []
+        for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
+            alertas.append(
+                {'id': id_alerta, 'descricao': descricao,
+                 'confirmado': confirmado,
+                 'temperatura': float(temperatura),
+                 'umidade': float(umidade),
+                 'created': f"{created}"})
+
         cur.close()
         conn.close()
     except mariadb.Error as e:
-        print(f"Erro Mariadb: {e}")
+        print(f"Erro Mariadb2: {e}")
         sys.exit(1)
         cur.close()
         conn.close()
 
     return render_template('lista.html', titulo='Medições', medicoes=medicoes, temperaturas=temperaturas,
-                           umidades=umidades, dias=dias)
+                           umidades=umidades, dias=dias, alertas=alertas)
     # renderizando o template lista e as variáveis desejadas.
 
 

@@ -40,6 +40,35 @@ INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1
 INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 18.2, 63.7, now());
 
 
+CREATE TABLE Config (
+id_config VARCHAR(50),
+intervalo_seconds INTEGER,
+temp_min DECIMAL(3,1),
+temp_max DECIMAL(3,1),
+umid_min DECIMAL(3,1),
+umid_max DECIMAL(3,1),
+updated DATETIME,
+obs VARCHAR(250),
+PRIMARY KEY (id_config)
+);
+
+INSERT INTO Config(id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs) VALUES ('default', 200, 18.2, 25.2, 50.7, 90, now(), 'Configuração padrão, intervalo é o tempo para cada medicao');
+
+CREATE TABLE Alerta (
+id_alerta INTEGER NOT NULL AUTO_INCREMENT,
+descricao VARCHAR(250),
+confirmado CHAR(1),
+temperatura DECIMAL(3,1),
+umidade DECIMAL(3,1),
+created DATETIME,
+PRIMARY KEY (id_alerta)
+);
+
+INSERT INTO Alerta(descricao, confirmado, temperatura, umidade, created) VALUES ('Medição fora do especificado', '1', 18.2, 90, now());
+INSERT INTO Alerta(descricao, confirmado, temperatura, umidade, created) VALUES ('Medição fora do especificado', '0', 12.2, 91, now());
+INSERT INTO Alerta(descricao, confirmado, temperatura, umidade, created) VALUES ('Medição fora do especificado', '0', 13.2, 90, now());
+
+
 CREATE USER 'kleber'@'localhost'   IDENTIFIED BY '1234';
 
 GRANT SELECT, INSERT, UPDATE, DELETE, DROP
@@ -48,4 +77,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE, DROP
 
 GRANT SELECT, INSERT, UPDATE, DELETE, DROP
    ON estufa.Usuario
+   TO 'kleber'@'localhost';
+
+GRANT SELECT, INSERT, UPDATE, DELETE, DROP
+   ON estufa.Config
+   TO 'kleber'@'localhost';
+
+GRANT SELECT, INSERT, UPDATE, DELETE, DROP
+   ON estufa.Alerta
    TO 'kleber'@'localhost';
