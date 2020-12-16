@@ -45,6 +45,19 @@ class Medicao:
         self.Umidade = Umidade
         self.Data = Data
 
+class Config:
+    def __init__(self, id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs):
+        self.id_config = id_config
+        self.intervalo_seconds = intervalo_seconds
+        self.temp_min = temp_min
+        self.temp_max = temp_max
+        self.umid_min = umid_min
+        self.umid_max = umid_max
+        self.updated = updated
+        self.obs = obs
+
+
+
 
 
 # configuração da rota index.
@@ -192,8 +205,6 @@ def criar():
     return redirect(url_for('index'))
 
 
-# já inclui o novo pokemon na lista e joga na tela inicial
-
 
 # configuração da rota login
 @app.route('/login')
@@ -241,6 +252,58 @@ def autenticar():
 def logout():
     session['usuario_logado'] = None
     flash('Não autenticado, necessário efetuar o login')
+    return redirect(url_for('index'))
+
+## formulário de configuração
+@app.route('/config')
+def config():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+        cur.execute("SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM config")
+        config = ''
+        for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+            config = Config(id_config, int(intervalo_seconds),  float(temp_min),  float(temp_max),  float(umid_min), float(umid_max), f"{updated}", obs)
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+        cur.close()
+        conn.close()
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        return redirect(url_for('login', proxima=url_for('novo')))
+    return render_template('config.html', titulo='Configuração', config=config)
+
+
+## Para realizar update nas configurações enviadas pelo form config
+@app.route('/salvarconfig', methods=['POST', ])
+def salvarconfig():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute("UPDATE config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
+            request.form['intervalo'],
+            request.form['temperaturaMinima'],
+            request.form['temperaturaMaxima'],
+            request.form['umidadeMinima'],
+            request.form['umidadeMaxima'],
+            request.form['obs']
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('index'))
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        cur.close()
+        conn.close()
+        #sys.exit(1)
+        flash(e)
+        return redirect(url_for('config'))
+
+    # lista.append(usuario)
     return redirect(url_for('index'))
 
 

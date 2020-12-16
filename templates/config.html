@@ -1,57 +1,37 @@
 {% extends "template.html" %}
 {% block conteudo %}
-    <form action="{{ url_for('criar') }}" method="post">
+    <form action="{{ url_for('salvarconfig') }}" method="post">
         <fieldset>
           <div class="form-group">
-            <label for="Nome">Nome</label>
-            <input type="text" id="Nome" name="Nome" class="form-control" required>
+            <label for="intervalo">Intervalo de medicao em segundos</label>
+            <input type="number" id="intervalo" name="intervalo" value={{ config.intervalo_seconds }} class="form-control" required>
+              <span>5min:300, 1hora: 3600</span>
+          </div>
+            <p>Configuração de alerta</p>
+          <div class="form-group">
+            <label for="temperaturaMinima">Temperatura Mínima</label>
+            <input type="number" id="temperaturaMinima" name="temperaturaMinima" value={{ config.temp_min }} class="form-control">
           </div>
           <div class="form-group">
-            <label for="Telefone">Telefone</label>
-            <input type="text" id="Telefone" name="Telefone" class="form-control">
+            <label for="temperaturaMaxima">Temperatura Máxima</label>
+            <input type="number" id="temperaturaMaxima" name="temperaturaMaxima" value={{ config.temp_max }} class="form-control">
           </div>
           <div class="form-group">
-            <label for="Email">E-mail</label>
-            <input type="text" id="Email" name="Email" class="form-control">
+            <label for="umidadeMinima">Umidade Minimma</label>
+            <input type="number" id="umidadeMinima" name="umidadeMinima" value={{ config.umid_min }} class="form-control">
           </div>
+
           <div class="form-group">
-            <label for="Privilegios">Privilegios</label>
-            <input type="text" id="Privilegios" name="Privilegios" class="form-control">
+            <label for="umidadeMaxima">Umidade Máxima</label>
+            <input type="number" id="umidadeMaxima" name="umidadeMaxima" value={{ config.umid_max }} class="form-control">
           </div>
-          <div class="form-group">
-            <label for="login">login</label>
-            <input type="text" id="login" name="login" class="form-control" required>
+
+        <div class="form-group">
+            <label for="obs">Observação</label>
+            <input type="number" id="obs" name="obs" value={{ config.obs }} class="form-control">
           </div>
-          <div class="form-group">
-            <label for="login">Senha</label>
-            <input type="password" id="Senha" name="Senha" class="form-control" required>
-          </div>
+
           <button type="submit" class="btn btn-primary btn-salvar">Salvar</button>
         </fieldset>
     </form>
-
-    <table class="table table-striped table-responsive table-bordered" style="margin-top: 16px">
-        <thead>
-            <tr>
-                <th>login</th>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>E-mail</th>
-                <th>Privilegios</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!--criamos uma estrutura de repetição com o Jinja2 para preencher nossa tabela com os dados dos pokemons-->
-            {% for user in usuarios  %}
-
-                        <tr>
-                            <td id="user">{{ user.login }}</td>
-                            <td>{{ user.Nome }}</td>
-                            <td>{{ user.Telefone }}</td>
-                            <td>{{ user.Email }}</td>
-                            <td>{{ user.Privilegios }}</td>
-                        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
 {% endblock %}
