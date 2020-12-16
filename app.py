@@ -260,7 +260,7 @@ def config():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-        cur.execute("SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM config")
+        cur.execute("SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
         config = ''
         for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
             config = Config(id_config, int(intervalo_seconds),  float(temp_min),  float(temp_max),  float(umid_min), float(umid_max), f"{updated}", obs)
@@ -276,6 +276,7 @@ def config():
     return render_template('config.html', titulo='Configuração', config=config)
 
 
+
 ## Para realizar update nas configurações enviadas pelo form config
 @app.route('/salvarconfig', methods=['POST', ])
 def salvarconfig():
@@ -283,7 +284,7 @@ def salvarconfig():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
-        cur.execute("UPDATE config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
+        cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
             request.form['intervalo'],
             request.form['temperaturaMinima'],
             request.form['temperaturaMaxima'],
