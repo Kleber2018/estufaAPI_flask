@@ -24,6 +24,7 @@ Data DATETIME,
 PRIMARY KEY (id_medicao)
 );
 
+
 INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 23.4, 62.0, now());
 INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 20.4, 61.2, now());
 INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 21.4, 62.5, now());
@@ -86,3 +87,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE, DROP
 GRANT SELECT, INSERT, UPDATE, DELETE, DROP
    ON estufa.Alerta
    TO 'kleber'@'localhost';
+
+
+

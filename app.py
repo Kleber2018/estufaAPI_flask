@@ -68,7 +68,7 @@ def index():
         cur = conn.cursor()
         cur.execute(
             "SELECT id_medicao, Identificacao, Temperatura, Umidade, DATE_FORMAT(Data, '(%d) %H:%i') FROM Medicao"
-            " WHERE year(Data)=year(now()) ORDER BY Data DESC LIMIT 35")
+            " WHERE 1=1 ORDER BY Data DESC LIMIT 40")
         medicoes = []
         temperaturas = []
         umidades = []
@@ -87,7 +87,7 @@ def index():
 
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Alerta"
-            " WHERE 1=1 ORDER BY created DESC LIMIT 10")
+            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
         alertas = []
         for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
             alertas.append(
@@ -110,14 +110,18 @@ def index():
     # renderizando o template lista e as variáveis desejadas.
 
 
-@app.route('/medicao')
+@app.route('/medicao',  methods=['GET'])
 def medicao():
+    #para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
+    #print(request.args['datainicial']) #'2020-12-15'
+    #print(request.args['datafinal']) # '2020-12-25'
+
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
         cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, Data FROM Medicao"
-                    " WHERE year(Data)=year(now()) and month(Data)=month(now()) ORDER BY Data DESC LIMIT 50")
+                    " WHERE Data > ? and Data < ? ORDER BY Data DESC LIMIT 50", (request.args['datainicial'], request.args['datafinal']))
         retornoBD = []
         for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
             retornoBD.append(
@@ -205,7 +209,6 @@ def criar():
     return redirect(url_for('index'))
 
 
-
 # configuração da rota login
 @app.route('/login')
 def login():
@@ -260,7 +263,7 @@ def config():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-        cur.execute("SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM config")
+        cur.execute("SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
         config = ''
         for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
             config = Config(id_config, int(intervalo_seconds),  float(temp_min),  float(temp_max),  float(umid_min), float(umid_max), f"{updated}", obs)
@@ -276,6 +279,7 @@ def config():
     return render_template('config.html', titulo='Configuração', config=config)
 
 
+
 ## Para realizar update nas configurações enviadas pelo form config
 @app.route('/salvarconfig', methods=['POST', ])
 def salvarconfig():
@@ -283,7 +287,7 @@ def salvarconfig():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
-        cur.execute("UPDATE config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
+        cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
             request.form['intervalo'],
             request.form['temperaturaMinima'],
             request.form['temperaturaMaxima'],
@@ -307,11 +311,38 @@ def salvarconfig():
     return redirect(url_for('index'))
 
 
+@app.route('/silenciaralertas')
+def silenciaralertas():
+    print('211')
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+        print('231')
+        cur.execute("UPDATE Alerta SET confirmado = '1' WHERE confirmado = '0';")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('index'))
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        cur.close()
+        conn.close()
+        sys.exit(1)
+        flash(e)
+        return redirect(url_for('index'))
+
+    # lista.append(usuario)
+    return redirect(url_for('index'))
+
 # app.run(host='0.0.0.0', port=8080)
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+if __name__ == "__main__":
+  debug = True # com essa opção como True, ao salvar, o "site" recarrega automaticamente.
+  app.run(host='0.0.0.0', port=5000, debug=debug)
+
+#if __name__ == '__main__':
+#    app.run(host='0.0.0.0', port=8080, debug=True)
 
 # from flask_cors import CORS
 # import json
