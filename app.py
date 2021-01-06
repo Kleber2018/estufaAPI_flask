@@ -7,7 +7,9 @@ from flask import Flask, render_template, request, redirect, session, flash, url
 import mariadb
 import sys
 
-# from flask_cors import CORS
+from flask_cors import CORS
+
+import socket
 
 # render template: passando o nome do modelo e a variáveis ele vai renderizar o template
 # request: faz as requisições da nosa aplicação
@@ -23,7 +25,7 @@ password = '1234'
 host = 'localhost'
 port = 3306
 database = 'estufa'
-# CORS(app)
+CORS(app)
 
 # chave secreta da sessão
 app.secret_key = 'flask'
@@ -57,7 +59,20 @@ class Config:
         self.obs = obs
 
 
-
+#PARA BUSCAR O DISPOSITIVO NA REDE
+@app.route('/scan', methods=['GET', 'POST'])
+def scan():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return jsonify({'retorno': f"{IP}"}) #ip do raspberry
+    #return jsonify({'retorno' : f"{request.remote_addr}"}) #ip do requisitante
 
 
 # configuração da rota index.
@@ -84,7 +99,6 @@ def index():
             # umidades.append(float(Umidade))
             dias.insert(0, f"{Data}")
 
-
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Alerta"
             " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
@@ -109,7 +123,7 @@ def index():
                            umidades=umidades, dias=dias, alertas=alertas)
     # renderizando o template lista e as variáveis desejadas.
 
-
+#API
 @app.route('/medicao',  methods=['GET'])
 def medicao():
     #para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
@@ -121,7 +135,7 @@ def medicao():
         cur = conn.cursor()
 
         cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, Data FROM Medicao"
-                    " WHERE Data > ? and Data < ? ORDER BY Data DESC LIMIT 50", (request.args['datainicial'], request.args['datafinal']))
+                    " WHERE Data >= ? and Data <= ? ORDER BY Data DESC LIMIT 50", (request.args['datainicial'], request.args['datafinal']))
         retornoBD = []
         for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
             retornoBD.append(
@@ -136,6 +150,35 @@ def medicao():
         sys.exit(1)
     return jsonify(retornoBD)
 
+#API
+@app.route('/alertas',  methods=['GET'])
+def alertas():
+    #para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
+    #print(request.args['datainicial']) #'2020-12-15'
+    #print(request.args['datafinal']) # '2020-12-25'
+
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id_alerta, descricao, confirmado, temperatura, umidade, created FROM Alerta"
+            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
+        alertas = []
+        for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
+            alertas.append(
+                {'id': id_alerta, 'descricao': descricao,
+                 'confirmado': confirmado,
+                 'temperatura': float(temperatura),
+                 'umidade': float(umidade),
+                 'created': f"{created}"})
+
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+    return jsonify(alertas)
 
 # configuração da rota novo, ela só poderá ser acessda se o usuário estiver logado, caso contrário redireciona para a tela de login
 @app.route('/novo')
@@ -333,6 +376,29 @@ def silenciaralertas():
 
     # lista.append(usuario)
     return redirect(url_for('index'))
+
+#api do Ionic para silenciar os alertas
+@app.route('/silenciaralertasapi', methods=['GET'])
+def silenciaralertasapi():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+        print('231')
+        cur.execute("UPDATE Alerta SET confirmado = '1' WHERE confirmado = '0';")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'retorno' : f"ok"})
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        cur.close()
+        conn.close()
+        sys.exit(1)
+        flash(e)
+        return jsonify({'retorno' : f"Erro Mariadb: {e}"})
+
+    # lista.append(usuario)
+    return jsonify({'retorno' : f"ok"})
 
 # app.run(host='0.0.0.0', port=8080)
 
