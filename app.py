@@ -178,7 +178,37 @@ def alertas():
     except mariadb.Error as e:
         print(f"Erro Mariadb: {e}")
         sys.exit(1)
+    print(alertas)
     return jsonify(alertas)
+
+
+## api de configurações
+@app.route('/apiconfig', methods=['GET'])
+def apiconfig():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
+        configs = []
+        for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+            configs.append(
+                { 'id_config': id_config,
+                  'intervalo_seconds': int(intervalo_seconds),
+                  'temp_min': float(temp_min),
+                  'temp_max': float(temp_max),
+                  'umid_min': float(umid_min),
+                  'umid_max': float(umid_max),
+                  'updated': f"{updated}",
+                  'obs': obs})
+
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+    return jsonify(configs)
 
 # configuração da rota novo, ela só poderá ser acessda se o usuário estiver logado, caso contrário redireciona para a tela de login
 @app.route('/novo')
@@ -319,6 +349,7 @@ def config():
         conn.close()
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
         return redirect(url_for('login', proxima=url_for('novo')))
+    print(config)
     return render_template('config.html', titulo='Configuração', config=config)
 
 
@@ -352,6 +383,37 @@ def salvarconfig():
 
     # lista.append(usuario)
     return redirect(url_for('index'))
+
+
+## API Para realizar update nas configurações enviadas pelo form config
+@app.route('/apisalvarconfig', methods=['POST', ])
+def apisalvarconfig():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
+            request.form['intervalo'],
+            request.form['temperaturaMinima'],
+            request.form['temperaturaMaxima'],
+            request.form['umidadeMinima'],
+            request.form['umidadeMaxima'],
+            request.form['obs']
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('index'))
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        cur.close()
+        conn.close()
+        #sys.exit(1)
+        flash(e)
+        return jsonify(e)
+
+    # lista.append(usuario)
+    return jsonify('true')
 
 
 @app.route('/silenciaralertas')
