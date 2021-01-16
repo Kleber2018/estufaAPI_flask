@@ -178,7 +178,37 @@ def alertas():
     except mariadb.Error as e:
         print(f"Erro Mariadb: {e}")
         sys.exit(1)
+    print(alertas)
     return jsonify(alertas)
+
+
+## api de configurações
+@app.route('/apiconfig', methods=['GET'])
+def apiconfig():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
+        configs = []
+        for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+            configs.append(
+                { 'id_config': id_config,
+                  'intervalo_seconds': int(intervalo_seconds),
+                  'temp_min': float(temp_min),
+                  'temp_max': float(temp_max),
+                  'umid_min': float(umid_min),
+                  'umid_max': float(umid_max),
+                  'updated': f"{updated}",
+                  'obs': obs})
+
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+    return jsonify(configs)
 
 # configuração da rota novo, ela só poderá ser acessda se o usuário estiver logado, caso contrário redireciona para a tela de login
 @app.route('/novo')
@@ -300,6 +330,7 @@ def logout():
     flash('Não autenticado, necessário efetuar o login')
     return redirect(url_for('index'))
 
+
 ## formulário de configuração
 @app.route('/config')
 def config():
@@ -319,6 +350,7 @@ def config():
         conn.close()
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
         return redirect(url_for('login', proxima=url_for('novo')))
+    print(config)
     return render_template('config.html', titulo='Configuração', config=config)
 
 
@@ -352,6 +384,41 @@ def salvarconfig():
 
     # lista.append(usuario)
     return redirect(url_for('index'))
+
+
+## API Para realizar update nas configurações enviadas pelo form config
+@app.route('/apisalvarconfig', methods=['POST', ])
+def apisalvarconfig():
+    #print(request.headers)
+    r = request.get_json()
+    params = r.get("params")
+    print(params)
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
+            params.get('intervalo_seconds'),
+            params.get('temp_min'),
+            params.get('temp_max'),
+            params.get('umid_min'),
+            params.get('umid_max'),
+            params.get('obs')
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'retorno': f"salvo"})
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        cur.close()
+        conn.close()
+        #sys.exit(1)
+        flash(e)
+        return jsonify({'retorno': f"{e}"})
+
+    # lista.append(usuario)
+    return jsonify({'retorno': f"salvo"})
 
 
 @app.route('/silenciaralertas')
@@ -406,6 +473,10 @@ def silenciaralertasapi():
 if __name__ == "__main__":
   debug = True # com essa opção como True, ao salvar, o "site" recarrega automaticamente.
   app.run(host='0.0.0.0', port=5000, debug=debug)
+
+
+
+
 
 #if __name__ == '__main__':
 #    app.run(host='0.0.0.0', port=8080, debug=True)
