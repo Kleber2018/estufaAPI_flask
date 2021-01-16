@@ -330,6 +330,7 @@ def logout():
     flash('Não autenticado, necessário efetuar o login')
     return redirect(url_for('index'))
 
+
 ## formulário de configuração
 @app.route('/config')
 def config():
@@ -388,32 +389,36 @@ def salvarconfig():
 ## API Para realizar update nas configurações enviadas pelo form config
 @app.route('/apisalvarconfig', methods=['POST', ])
 def apisalvarconfig():
+    #print(request.headers)
+    r = request.get_json()
+    params = r.get("params")
+    print(params)
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
         cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
-            request.form['intervalo'],
-            request.form['temperaturaMinima'],
-            request.form['temperaturaMaxima'],
-            request.form['umidadeMinima'],
-            request.form['umidadeMaxima'],
-            request.form['obs']
+            params.get('intervalo_seconds'),
+            params.get('temp_min'),
+            params.get('temp_max'),
+            params.get('umid_min'),
+            params.get('umid_max'),
+            params.get('obs')
         ))
         conn.commit()
         cur.close()
         conn.close()
-        return redirect(url_for('index'))
+        return jsonify({'retorno': f"salvo"})
     except mariadb.Error as e:
         print(f"Erro Mariadb: {e}")
         cur.close()
         conn.close()
         #sys.exit(1)
         flash(e)
-        return jsonify(e)
+        return jsonify({'retorno': f"{e}"})
 
     # lista.append(usuario)
-    return jsonify('true')
+    return jsonify({'retorno': f"salvo"})
 
 
 @app.route('/silenciaralertas')
@@ -468,6 +473,10 @@ def silenciaralertasapi():
 if __name__ == "__main__":
   debug = True # com essa opção como True, ao salvar, o "site" recarrega automaticamente.
   app.run(host='0.0.0.0', port=5000, debug=debug)
+
+
+
+
 
 #if __name__ == '__main__':
 #    app.run(host='0.0.0.0', port=8080, debug=True)
