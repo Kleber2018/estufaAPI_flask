@@ -183,6 +183,37 @@ def alertas():
     print(alertas)
     return jsonify(alertas)
 
+#API Alertas por data
+@app.route('/alertasperiodo',  methods=['GET'])
+def alertasperiodo():
+    #para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
+    #print(request.args['datainicial']) #'2020-12-15'
+    #print(request.args['datafinal']) # '2020-12-25'
+
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id_alerta, descricao, confirmado, temperatura, umidade, created FROM Alerta"
+            " WHERE  created >= ? and created <= ? ORDER BY created DESC LIMIT 50",
+            (request.args['datainicial'], request.args['datafinal']))
+        alertas = []
+        for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
+            alertas.append(
+                {'id': id_alerta, 'descricao': descricao,
+                 'confirmado': confirmado,
+                 'temperatura': float(temperatura),
+                 'umidade': float(umidade),
+                 'created': f"{created}"})
+
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+    print(alertas)
+    return jsonify(alertas)
 
 ## api de configurações
 @app.route('/apiconfig', methods=['GET'])
@@ -473,23 +504,27 @@ def silenciaralertasapi():
 
 
 ## API para deletar medições
-@app.route('/apiocultarmedicoes', methods=['POST', ])
+@app.route('/apiocultarmedicoes', methods=['GET', ])
 def apiocultarmedicoes():
     #print(request.headers)
-    r = request.get_json()
-    params = r.get("params")
 
-    print(params)
     #print(request.args['id_medicao'])
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-        retorno = params.get('id_medicao')
-        for n in retorno:
-            print(n)
-            cur.execute("UPDATE Medicao SET oculto = '1' WHERE id_medicao = ?;", (
-                f"{n}"
-               # params.get('id_medicao'),
+        #r = request.get_json()
+        #params = r.get("params")
+
+        #print(params)
+
+        #id = f"{params.get('id_medicao')}"
+
+        print(f"VALOR DE N: {request.args['id']}")
+        cur.execute(
+            "UPDATE Medicao SET oculto = ? WHERE id_medicao = ?;",
+            (
+                '1',
+                request.args['id']
             ))
         conn.commit()
         cur.close()
