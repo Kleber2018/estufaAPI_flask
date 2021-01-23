@@ -107,7 +107,7 @@ def index():
         cur = conn.cursor()
         cur.execute(
             "SELECT id_medicao, identificacao, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Medicao"
-            " WHERE oculto = '0' ORDER BY Data DESC LIMIT 40")
+            " WHERE oculto = '0' ORDER BY created DESC LIMIT 40")
         medicoes = []
         temperaturas = []
         umidades = []
