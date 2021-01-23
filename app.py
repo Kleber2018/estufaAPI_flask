@@ -59,7 +59,29 @@ class Config:
         self.obs = obs
 
 
-#PARA BUSCAR O DISPOSITIVO NA REDE
+#PARA ALTERAR DATATIME DO RASPBERRY - http://127.0.0.1:5000/updatedatasistema?datetime="Mon Aug 28 20:10:11 UTC-3 2019"
+@app.route('/updatedatasistema', methods=['GET',])
+def updatedatasistema():
+
+    import os
+
+    from datetime import datetime
+    try:
+        #c = os.popen('sudo date -s "Mon Aug 28 20:10:11 UTC-3 2019"')
+        print(f"sudo date -s  {request.args['datetime']}")
+
+        c = os.popen(f"sudo date -s  {request.args['datetime']}")
+        c.read()
+        c.close()
+        now = datetime.now()
+
+    except Exception:
+        return jsonify({'datetime': f"{now}"})
+
+    return jsonify({'datetime': f"{now}"}) #ip do raspberry
+    #return jsonify({'retorno' : f"{request.remote_addr}"}) #ip do requisitante
+
+#PARA Alterar hora do sistema
 @app.route('/scan', methods=['GET', 'POST'])
 def scan():
     from datetime import datetime
@@ -73,7 +95,7 @@ def scan():
         IP = '127.0.0.1'
     finally:
         s.close()
-    return jsonify({'retorno': f"{IP}", 'hora': f"{now}"}) #ip do raspberry
+    return jsonify({'retorno': f"{IP}", 'datetime': f"{now}"}) #ip do raspberry
     #return jsonify({'retorno' : f"{request.remote_addr}"}) #ip do requisitante
 
 
