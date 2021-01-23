@@ -62,16 +62,18 @@ class Config:
 #PARA BUSCAR O DISPOSITIVO NA REDE
 @app.route('/scan', methods=['GET', 'POST'])
 def scan():
+    from datetime import datetime
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # doesn't even have to be reachable
         s.connect(('10.255.255.255', 1))
         IP = s.getsockname()[0]
+        now = datetime.now()
     except Exception:
         IP = '127.0.0.1'
     finally:
         s.close()
-    return jsonify({'retorno': f"{IP}"}) #ip do raspberry
+    return jsonify({'retorno': f"{IP}", 'hora': f"{now}"}) #ip do raspberry
     #return jsonify({'retorno' : f"{request.remote_addr}"}) #ip do requisitante
 
 
