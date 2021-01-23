@@ -82,8 +82,8 @@ def index():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
         cur.execute(
-            "SELECT id_medicao, Identificacao, Temperatura, Umidade, DATE_FORMAT(Data, '(%d) %H:%i') FROM Medicao"
-            " WHERE 1=1 ORDER BY Data DESC LIMIT 40")
+            "SELECT id_medicao, identificacao, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Medicao"
+            " WHERE oculto = '0' ORDER BY Data DESC LIMIT 40")
         medicoes = []
         temperaturas = []
         umidades = []
@@ -101,11 +101,12 @@ def index():
 
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Alerta"
-            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
+            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 25")
         alertas = []
         for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
             alertas.append(
-                {'id': id_alerta, 'descricao': descricao,
+                {'id': id_alerta,
+                 'descricao': descricao,
                  'confirmado': confirmado,
                  'temperatura': float(temperatura),
                  'umidade': float(umidade),
@@ -134,14 +135,14 @@ def medicao():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
-        cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, Data FROM Medicao"
-                    " WHERE Data >= ? and Data <= ? ORDER BY Data DESC LIMIT 50", (request.args['datainicial'], request.args['datafinal']))
+        cur.execute("SELECT id_medicao, identificacao, temperatura, umidade, created FROM Medicao"
+                    " WHERE created >= ? and created <= ? and oculto = '0' ORDER BY created DESC LIMIT 50", (request.args['datainicial'], request.args['datafinal']))
         retornoBD = []
-        for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
+        for id_medicao, identificacao, temperatura, umidade, created in cur:
             retornoBD.append(
-                {'id': id_medicao, 'Sensor': Identificacao, 'Temperatura': float(Temperatura),
-                 'Umidade': float(Umidade),
-                 'Data': f"{Data}"})
+                {'id': id_medicao, 'Sensor': identificacao, 'Temperatura': float(temperatura),
+                 'Umidade': float(umidade),
+                 'Data': f"{created}"})
 
         cur.close()
         conn.close()
@@ -149,6 +150,7 @@ def medicao():
         print(f"Erro Mariadb: {e}")
         sys.exit(1)
     return jsonify(retornoBD)
+
 
 #API
 @app.route('/alertas',  methods=['GET'])
@@ -163,7 +165,7 @@ def alertas():
 
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, created FROM Alerta"
-            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
+            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 25")
         alertas = []
         for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
             alertas.append(
@@ -181,6 +183,37 @@ def alertas():
     print(alertas)
     return jsonify(alertas)
 
+#API Alertas por data
+@app.route('/alertasperiodo',  methods=['GET'])
+def alertasperiodo():
+    #para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
+    #print(request.args['datainicial']) #'2020-12-15'
+    #print(request.args['datafinal']) # '2020-12-25'
+
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id_alerta, descricao, confirmado, temperatura, umidade, created FROM Alerta"
+            " WHERE  created >= ? and created <= ? ORDER BY created DESC LIMIT 50",
+            (request.args['datainicial'], request.args['datafinal']))
+        alertas = []
+        for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
+            alertas.append(
+                {'id': id_alerta, 'descricao': descricao,
+                 'confirmado': confirmado,
+                 'temperatura': float(temperatura),
+                 'umidade': float(umidade),
+                 'created': f"{created}"})
+
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+    print(alertas)
+    return jsonify(alertas)
 
 ## api de configurações
 @app.route('/apiconfig', methods=['GET'])
@@ -361,9 +394,13 @@ def salvarconfig():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
+        intervalo = request.form['intervalo']
+        if request.form['intervalo'] < 60:
+            intervalo = 60
+
 
         cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
-            request.form['intervalo'],
+            intervalo,
             request.form['temperaturaMinima'],
             request.form['temperaturaMaxima'],
             request.form['umidadeMinima'],
@@ -393,12 +430,16 @@ def apisalvarconfig():
     r = request.get_json()
     params = r.get("params")
     print(params)
+
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
+        intervalo = params.get('intervalo_seconds')
+        if params.get('intervalo_seconds') < 60:
+            intervalo = 60
 
         cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
-            params.get('intervalo_seconds'),
+            intervalo,
             params.get('temp_min'),
             params.get('temp_max'),
             params.get('umid_min'),
@@ -469,6 +510,44 @@ def silenciaralertasapi():
 
 # app.run(host='0.0.0.0', port=8080)
 
+
+## API para deletar medições
+@app.route('/apiocultarmedicoes', methods=['GET', ])
+def apiocultarmedicoes():
+    #print(request.headers)
+
+    #print(request.args['id_medicao'])
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+        #r = request.get_json()
+        #params = r.get("params")
+
+        #print(params)
+
+        #id = f"{params.get('id_medicao')}"
+
+        print(f"VALOR DE N: {request.args['id']}")
+        cur.execute(
+            "UPDATE Medicao SET oculto = ? WHERE id_medicao = ?;",
+            (
+                '1',
+                request.args['id']
+            ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'retorno': f"alterado"})
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        cur.close()
+        conn.close()
+        #sys.exit(1)
+        flash(e)
+        return jsonify({'retorno': f"{e}"})
+
+    # lista.append(usuario)
+    return jsonify({'retorno': f"salvo"})
 
 if __name__ == "__main__":
   debug = True # com essa opção como True, ao salvar, o "site" recarrega automaticamente.

@@ -17,28 +17,29 @@ INSERT INTO Usuario(login, Senha, Nome, Telefone, Email, Privilegios) VALUES ('k
 
 CREATE TABLE Medicao (
 id_medicao INTEGER NOT NULL AUTO_INCREMENT,
-Identificacao VARCHAR(15),
-Temperatura DECIMAL(3,1),
-Umidade DECIMAL(3,1),
-Data DATETIME,
+identificacao VARCHAR(15),
+temperatura DECIMAL(3,1),
+umidade DECIMAL(3,1),
+oculto CHAR(1),
+created DATETIME,
 PRIMARY KEY (id_medicao)
 );
 
 
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 23.4, 62.0, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 20.4, 61.2, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 21.4, 62.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 22.4, 62.1, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 22.4, 60.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 23.4, 60.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 23.4, 60.2, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 22.4, 56.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 20.4, 56.3, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 20.2, 57.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 20.1, 60.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 19.3, 62.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 18.4, 62.5, now());
-INSERT INTO Medicao(Identificacao, Temperatura, Umidade, Data) VALUES ('Sensor 1', 18.2, 63.7, now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 23.4, 62.0, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 20.4, 61.2, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 21.4, 62.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 22.4, 62.1, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 22.4, 60.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 23.4, 60.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 23.4, 60.2, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 22.4, 56.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 20.4, 56.3, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 20.2, 57.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 20.1, 60.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 19.3, 62.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 18.4, 62.5, '0', now());
+INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES ('Sensor 1', 18.2, 63.7, '0', now());
 
 
 CREATE TABLE Config (
