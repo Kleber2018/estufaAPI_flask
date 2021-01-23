@@ -101,7 +101,7 @@ def index():
 
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Alerta"
-            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
+            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 25")
         alertas = []
         for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
             alertas.append(
@@ -165,7 +165,7 @@ def alertas():
 
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, created FROM Alerta"
-            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 15")
+            " WHERE confirmado = '0' ORDER BY created DESC LIMIT 25")
         alertas = []
         for id_alerta, descricao, confirmado, temperatura, umidade, created in cur:
             alertas.append(
@@ -394,9 +394,13 @@ def salvarconfig():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
+        intervalo = request.form['intervalo']
+        if request.form['intervalo'] < 60:
+            intervalo = 60
+
 
         cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
-            request.form['intervalo'],
+            intervalo,
             request.form['temperaturaMinima'],
             request.form['temperaturaMaxima'],
             request.form['umidadeMinima'],
@@ -426,12 +430,16 @@ def apisalvarconfig():
     r = request.get_json()
     params = r.get("params")
     print(params)
+
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
+        intervalo = params.get('intervalo_seconds')
+        if params.get('intervalo_seconds') < 60:
+            intervalo = 60
 
         cur.execute("UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';", (
-            params.get('intervalo_seconds'),
+            intervalo,
             params.get('temp_min'),
             params.get('temp_max'),
             params.get('umid_min'),
