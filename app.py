@@ -111,6 +111,8 @@ def index():
         cur.execute(
             "SELECT id_medicao, identificacao, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Medicao"
             " WHERE oculto = '0' ORDER BY created DESC LIMIT 40")
+
+
         medicoes = []
         temperaturas = []
         umidades = []
@@ -151,10 +153,32 @@ def index():
                            umidades=umidades, dias=dias, alertas=alertas)
     # renderizando o template lista e as variáveis desejadas.
 
-
 # API
 @app.route('/medicao', methods=['GET'])
 def medicao():
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        cur.execute("SELECT id_medicao, identificacao, temperatura, umidade, created FROM Medicao m1 where m1.created = (SELECT max(m2.created) FROM Medicao m2)")
+
+        retornoBD = []
+        for id_medicao, identificacao, temperatura, umidade, created in cur:
+            retornoBD.append(
+                {'id': id_medicao, 'Sensor': identificacao, 'Temperatura': float(temperatura),
+                 'Umidade': float(umidade),
+                 'Data': f"{created}"})
+
+        cur.close()
+        conn.close()
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        sys.exit(1)
+    return jsonify(retornoBD)
+
+# API
+@app.route('/medicoes', methods=['GET'])
+def medicoes():
     # para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20&oculto=1,1,1,1
     # print(request.args['datainicial']) #'2020-12-15'
     # print(request.args['datafinal']) # '2020-12-25'
