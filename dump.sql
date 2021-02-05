@@ -18,8 +18,8 @@ INSERT INTO Usuario(login, Senha, Nome, Telefone, Email, Privilegios) VALUES ('k
 CREATE TABLE Medicao (
 id_medicao INTEGER NOT NULL AUTO_INCREMENT,
 identificacao VARCHAR(15),
-temperatura DECIMAL(3,1),
-umidade DECIMAL(3,1),
+temperatura DECIMAL(4,1),
+umidade DECIMAL(4,1),
 oculto CHAR(1),
 created DATETIME,
 PRIMARY KEY (id_medicao)
@@ -45,10 +45,10 @@ INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES
 CREATE TABLE Config (
 id_config VARCHAR(50),
 intervalo_seconds INTEGER,
-temp_min DECIMAL(3,1),
-temp_max DECIMAL(3,1),
-umid_min DECIMAL(3,1),
-umid_max DECIMAL(3,1),
+temp_min DECIMAL(4,1),
+temp_max DECIMAL(4,1),
+umid_min DECIMAL(4,1),
+umid_max DECIMAL(4,1),
 updated DATETIME,
 obs VARCHAR(250),
 PRIMARY KEY (id_config)
@@ -60,8 +60,8 @@ CREATE TABLE Alerta (
 id_alerta INTEGER NOT NULL AUTO_INCREMENT,
 descricao VARCHAR(250),
 confirmado CHAR(1),
-temperatura DECIMAL(3,1),
-umidade DECIMAL(3,1),
+temperatura DECIMAL(4,1),
+umidade DECIMAL(4,1),
 created DATETIME,
 PRIMARY KEY (id_alerta)
 );
