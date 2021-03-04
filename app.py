@@ -1,19 +1,11 @@
 import time
-
-time.sleep(10.0)
-from operator import itemgetter
-
+time.sleep(2.0)
 from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 import mariadb
 import sys
 
 from flask_cors import CORS
-
-from views import auth
-
 import socket
-
-import datetime
 
 # render template: passando o nome do modelo e a variáveis ele vai renderizar o template
 # request: faz as requisições da nosa aplicação
@@ -33,6 +25,9 @@ CORS(app)
 
 # chave secreta da sessão
 app.secret_key = 'flask'
+app.config.from_object('config')
+
+from views import auth
 
 
 class Usuario:
@@ -70,20 +65,16 @@ class Config:
 @app.route('/updatedatasistema', methods=['GET', ])
 def updatedatasistema():
     import os
-
     from datetime import datetime
     try:
         # c = os.popen('sudo date -s "Mon Aug 28 20:10:11 UTC-3 2019"')
         print(f"sudo date -s  {request.args['datetime']}")
-
         c = os.popen(f"sudo date -s  {request.args['datetime']}")
         c.read()
         c.close()
         now = datetime.now()
-
     except Exception:
         return jsonify({'datetime': f"{now}"})
-
     return jsonify({'datetime': f"{now}"})  # ip do raspberry
     # return jsonify({'retorno' : f"{request.remote_addr}"}) #ip do requisitante
 
@@ -115,8 +106,6 @@ def index():
         cur.execute(
             "SELECT id_medicao, identificacao, temperatura, umidade, DATE_FORMAT(created, '(%d) %H:%i') FROM Medicao"
             " WHERE oculto = '0' ORDER BY created DESC LIMIT 40")
-
-
         medicoes = []
         temperaturas = []
         umidades = []
@@ -144,7 +133,6 @@ def index():
                  'temperatura': float(temperatura),
                  'umidade': float(umidade),
                  'created': f"{created}"})
-
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -152,10 +140,10 @@ def index():
         sys.exit(1)
         cur.close()
         conn.close()
-
     return render_template('lista.html', titulo='Medições', medicoes=medicoes, temperaturas=temperaturas,
                            umidades=umidades, dias=dias, alertas=alertas)
     # renderizando o template lista e as variáveis desejadas.
+
 
 # API
 @app.route('/medicao', methods=['GET'])
@@ -163,9 +151,9 @@ def medicao():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-
-        cur.execute("SELECT id_medicao, identificacao, temperatura, umidade, created FROM Medicao m1 where m1.created = (SELECT max(m2.created) FROM Medicao m2)")
-
+        cur.execute("SELECT id_medicao, identificacao, temperatura, umidade, created "
+                    "FROM Medicao m1 "
+                    "where m1.created = (SELECT max(m2.created) FROM Medicao m2)")
         retornoBD = []
         for id_medicao, identificacao, temperatura, umidade, created in cur:
             retornoBD.append(
@@ -186,17 +174,13 @@ def medicoes():
     # para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20&oculto=1,1,1,1
     # print(request.args['datainicial']) #'2020-12-15'
     # print(request.args['datafinal']) # '2020-12-25'
-
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
         print(request.args['oculto'])
-
         ocultopesq = request.args['oculto'].split(',')
-
         if len(ocultopesq) != 4:
             ocultopesq = [0, 1, 2, 3]
-
         cur.execute("SELECT id_medicao, identificacao, temperatura, umidade, created FROM Medicao"
                     " WHERE created >= ? and created <= ? and (oculto = ? or oculto = ? or oculto = ? or oculto = ?) ORDER BY created DESC LIMIT 50",
                     (request.args['datainicial'], request.args['datafinal'], ocultopesq[0], ocultopesq[1], ocultopesq[2], ocultopesq[3]))
@@ -206,7 +190,6 @@ def medicoes():
                 {'id': id_medicao, 'Sensor': identificacao, 'Temperatura': float(temperatura),
                  'Umidade': float(umidade),
                  'Data': f"{created}"})
-
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -221,7 +204,6 @@ def alertas():
     # para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
     # print(request.args['datainicial']) #'2020-12-15'
     # print(request.args['datafinal']) # '2020-12-25'
-
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
@@ -237,7 +219,6 @@ def alertas():
                  'temperatura': float(temperatura),
                  'umidade': float(umidade),
                  'created': f"{created}"})
-
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -253,11 +234,9 @@ def alertasperiodo():
     # para GET http://127.0.0.1:5000/medicao?datainicial=2020-12-10&datafinal=2021-01-20
     # print(request.args['datainicial']) #'2020-12-15'
     # print(request.args['datafinal']) # '2020-12-25'
-
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-
         cur.execute(
             "SELECT id_alerta, descricao, confirmado, temperatura, umidade, created FROM Alerta"
             " WHERE  created >= ? and created <= ? ORDER BY created DESC LIMIT 50",
@@ -270,7 +249,6 @@ def alertasperiodo():
                  'temperatura': float(temperatura),
                  'umidade': float(umidade),
                  'created': f"{created}"})
-
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -286,7 +264,6 @@ def apiconfig():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-
         cur.execute(
             "SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
         configs = []
@@ -300,7 +277,6 @@ def apiconfig():
                  'umid_max': float(umid_max),
                  'updated': f"{updated}",
                  'obs': obs})
-
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -319,7 +295,6 @@ def novo():
         usuarios = []
         for login, Nome, Telefone, Email, Privilegios in cur:
             usuarios.append(Usuario(login, Nome, Telefone, Email, Privilegios, ' '))
-
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -327,10 +302,8 @@ def novo():
         sys.exit(1)
         cur.close()
         conn.close()
-
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
         return redirect(url_for('login', proxima=url_for('novo')))
-
     return render_template('novo.html', titulo='Novo Usuario', usuarios=usuarios)
     # renderiza o template novo
 
@@ -338,9 +311,6 @@ def novo():
 # configuração da rpta criar que usa o método post para enviar dados dos nossos pokemons
 @app.route('/criar', methods=['POST', ])
 def criar():
-    # nome = request.form['nome']
-    # email = request.form['email']
-    # tipo = request.form['tipo']
     usuario = Usuario(
         request.form['login'],
         request.form['Nome'],
@@ -349,7 +319,6 @@ def criar():
         request.form['Privilegios'],
         request.form['Senha']
     )
-
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
@@ -377,7 +346,6 @@ def criar():
         sys.exit(1)
         flash(e)
         return redirect(url_for('novo'))
-
     # lista.append(usuario)
     return redirect(url_for('index'))
 
@@ -395,10 +363,8 @@ def autenticar():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-
         login = request.form['login'],
         senha = request.form['senha'],
-
         cur.execute("SELECT login, Senha, Nome, Telefone, Email, Privilegios FROM Usuario "
                     "WHERE login = %s and Senha = %s", (login[0].lower(), senha[0].lower(),))
         usuario = cur.fetchall()
@@ -424,46 +390,14 @@ def autenticar():
 
 @app.route('/loginapi', methods=['POST', ])
 def loginapi():
-
-    try:
-        #enviado pelo parans do get na url
-        #print(request.args.get('senha'))
-        #print(request.args.get('user'))
-        #print(request.args)
-
-        payload = {
-            'userId': 'kleber',
-            'exp': (datetime.datetime.now() + datetime.timedelta(minutes=5)).timestamp(),
-        }
-        jwt_created = auth.create_jwt(payload)
-        print(jwt_created)
-        decoded_jwt = auth.verify_and_decode_jwt(jwt_created)
-        print(decoded_jwt)
-
-
-        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
-        cur = conn.cursor()
-
-        login = request.json['user'],
-        senha = request.json['senha'],
-
-        cur.execute("SELECT login, Senha, Nome, Telefone, Email, Privilegios FROM Usuario "
-                    "WHERE login = %s and Senha = %s", (login[0].lower(), senha[0].lower(),))
-        usuario = cur.fetchall()
-        cur.close()
-        conn.close()
-
-
-        return jsonify('testando')
-
-    except mariadb.Error as e:
-        print(f"Erro Mariadb: {e}")
-        # sys.exit(1)
-        return redirect(url_for('login'))
-        flask(f"erro: {e}")
-
-    return jsonify('testando2')
-
+    if 'senha' in request.json:
+        if 'user' in request.json:
+            login_retorno = auth.autentication_api(request.json['user'], request.json['senha'])
+            return jsonify(login_retorno)
+        else:
+            return {'erro': 'Usuario invalido!'}
+    else:
+        return {'erro': 'Senha invalida!'}
 
 
 
@@ -511,7 +445,6 @@ def salvarconfig():
         intervalo = request.form['intervalo']
         if request.form['intervalo'] < 60:
             intervalo = 60
-
         cur.execute(
             "UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
@@ -533,7 +466,6 @@ def salvarconfig():
         # sys.exit(1)
         flash(e)
         return redirect(url_for('config'))
-
     # lista.append(usuario)
     return redirect(url_for('index'))
 
@@ -574,7 +506,6 @@ def apisalvarconfig():
         # sys.exit(1)
         flash(e)
         return jsonify({'retorno': f"{e}"})
-
     # lista.append(usuario)
     return jsonify({'retorno': f"salvo"})
 
@@ -598,7 +529,6 @@ def silenciaralertas():
         sys.exit(1)
         flash(e)
         return redirect(url_for('index'))
-
     # lista.append(usuario)
     return redirect(url_for('index'))
 
@@ -622,19 +552,14 @@ def silenciaralertasapi():
         sys.exit(1)
         flash(e)
         return jsonify({'retorno': f"Erro Mariadb: {e}"})
-
     # lista.append(usuario)
     return jsonify({'retorno': f"ok"})
 
-
-# app.run(host='0.0.0.0', port=8080)
 
 
 ## API para deletar medições
 @app.route('/apiocultarmedicoes', methods=['GET', ])
 def apiocultarmedicoes():
-    # print(request.headers)
-
     # print(request.args['id_medicao'])
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
@@ -673,52 +598,7 @@ if __name__ == "__main__":
     debug = True  # com essa opção como True, ao salvar, o "site" recarrega automaticamente.
     app.run(host='0.0.0.0', port=5000, debug=debug)
 
-# if __name__ == '__main__':
-#    app.run(host='0.0.0.0', port=8080, debug=True)
 
-# from flask_cors import CORS
-# import json
-#
-
-#
-# # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-#
-# from flask import Flask, jsonify, render_template
-#
-# app = Flask(__name__)
-# CORS(app)
-#
-#
-# @app.route('/estufa')
-# def estufaHtml():
-#
-#     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade, Data FROM Medicao"
-#                 " WHERE year(Data)=year(now()) and month(Data)=month(now()) LIMIT 20")
-#     retornoBD = []
-#     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
-#         retornoBD.append(
-#            {'id': id_medicao, 'Sensor': Identificacao, 'Temperatura': float(Temperatura), 'Umidade': float(Umidade), 'Data': f"{Data}"})
-#     return render_template('index.html', titulo='Estufa', medicoes=retornoBD)
-#
-#
-
-#
-#
-# @app.route('/medicoes')
-# def medicoes():
-#
-#     cur.execute("SELECT id_medicao, Identificacao, Temperatura, Umidade FROM Medicao")
-#     retornoBD = []
-#     for id_medicao, Identificacao, Temperatura, Umidade, Data in cur:
-#         retornoBD.append({'id': id_medicao, 'Identificação': Identificacao, 'Temperatura': Temperatura, 'Umidade': Umidade,  'Data': Data})
-#         print(f"Identificacao: {retornoBD}")
-#     print(retornoBD)
-#
-#     return f"Identificafddcao: {retornoBD}"
-#
-#
-#
-#
 # ##app.run(host='0.0.0.0', port=8080)
 #
 #

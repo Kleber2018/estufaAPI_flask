@@ -1,0 +1,10 @@
+
+
+# CONEXÃO LOCAL DO BANCO DE DADOS
+BD_USER = 'kleber'
+BD_PASSWORD = '1234'
+BD_HOST = 'localhost'
+BD_PORT = 3306
+DATABASE_NAME = 'estufa'
+
+
