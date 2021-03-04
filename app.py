@@ -483,16 +483,23 @@ def salvarconfig():
 @app.route('/apisalvarconfig', methods=['POST', ])
 def apisalvarconfig():
     try:
-        return_token = auth.verify_autentication_api(request.args['token'])
-        if 'autenticado' in return_token:
-            print('autenticado')
+        if 'token' in request.json:
+            return_token = auth.verify_autentication_api(request.json['token'])
+            if 'autenticado' in return_token:
+                print('autenticado')
+            else:
+                return jsonify({'erro': 'Necessario estar logado!'})
         else:
-            return jsonify({'erro': 'Necessario estar logado'})
-        r = request.get_json()
-        params = r.get("params")
-        intervalo = params.get('intervalo_seconds')
-        if params.get('intervalo_seconds') < 60:
+            return jsonify({'erro': 'Necessario estar logado!'})
+        if request.json['config']['intervalo_seconds'] < 60:
             intervalo = 60
+        else:
+            intervalo = request.json['config']['intervalo_seconds']
+        temp_min = request.json['config']['temp_min']
+        temp_max = request.json['config']['temp_max']
+        umid_min = request.json['config']['umid_min']
+        umid_max = request.json['config']['umid_max']
+        obs = request.json['config']['obs']
     except:
         return jsonify({'erro': '´Parametros invalidos'})
     try:
@@ -504,11 +511,11 @@ def apisalvarconfig():
             "UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
                 intervalo,
-                params.get('temp_min'),
-                params.get('temp_max'),
-                params.get('umid_min'),
-                params.get('umid_max'),
-                params.get('obs')
+                temp_min,
+                temp_max,
+                umid_min,
+                umid_max,
+                obs
             ))
         conn.commit()
         cur.close()
