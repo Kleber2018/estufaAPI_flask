@@ -9,7 +9,11 @@ import sys
 
 from flask_cors import CORS
 
+from views import auth
+
 import socket
+
+import datetime
 
 # render template: passando o nome do modelo e a variáveis ele vai renderizar o template
 # request: faz as requisições da nosa aplicação
@@ -416,6 +420,53 @@ def autenticar():
         # caso as credenciais não sejam validadas, exibe mensagem de erro e redirecion para o login
         flash('Acesso negado, digite novamente!')
         return redirect(url_for('login'))
+
+
+@app.route('/loginapi', methods=['POST', ])
+def loginapi():
+
+    try:
+        #enviado pelo parans do get na url
+        #print(request.args.get('senha'))
+        #print(request.args.get('user'))
+        #print(request.args)
+
+        payload = {
+            'userId': 'kleber',
+            'exp': (datetime.datetime.now() + datetime.timedelta(minutes=5)).timestamp(),
+        }
+        jwt_created = auth.create_jwt(payload)
+        print(jwt_created)
+        decoded_jwt = auth.verify_and_decode_jwt(jwt_created)
+        print(decoded_jwt)
+
+
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
+        login = request.json['user'],
+        senha = request.json['senha'],
+
+        cur.execute("SELECT login, Senha, Nome, Telefone, Email, Privilegios FROM Usuario "
+                    "WHERE login = %s and Senha = %s", (login[0].lower(), senha[0].lower(),))
+        usuario = cur.fetchall()
+        cur.close()
+        conn.close()
+
+
+        return jsonify('testando')
+
+    except mariadb.Error as e:
+        print(f"Erro Mariadb: {e}")
+        # sys.exit(1)
+        return redirect(url_for('login'))
+        flask(f"erro: {e}")
+
+    return jsonify('testando2')
+
+
+
+
 
 
 # configuração da rota logout
