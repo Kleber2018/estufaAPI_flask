@@ -70,9 +70,9 @@ def updatedatasistema():
         if 'autenticado' in return_token:
             print('autenticado')
         else:
-            return {'erro': 'Necessario estar logado'}
+            return jsonify({'erro': 'Necessario estar logado'})
     except:
-        return {'erro': 'Necessario estar logado'}
+        return jsonify({'erro': 'Necessario estar logado'})
     import os
     from datetime import datetime
     try:
@@ -399,14 +399,17 @@ def autenticar():
 
 @app.route('/loginapi', methods=['POST', ])
 def loginapi():
-    if 'senha' in request.json:
-        if 'user' in request.json:
-            login_retorno = auth.autentication_api(request.json['user'], request.json['senha'])
-            return jsonify(login_retorno)
+    try:
+        if 'senha' in request.json:
+            if 'user' in request.json:
+                login_retorno = auth.autentication_api(request.json['user'], request.json['senha'])
+                return jsonify(login_retorno)
+            else:
+                return jsonify({'erro': 'Usuario invalido!'})
         else:
-            return {'erro': 'Usuario invalido!'}
-    else:
-        return {'erro': 'Senha invalida!'}
+            return jsonify({'erro': 'Senha invalida!'})
+    except:
+        return jsonify({'erro': 'Erro na requisicao'})
 
 
 # configuração da rota logout
@@ -479,17 +482,23 @@ def salvarconfig():
 ## API Para realizar update nas configurações enviadas pelo form config
 @app.route('/apisalvarconfig', methods=['POST', ])
 def apisalvarconfig():
-    # print(request.headers)
-    r = request.get_json()
-    params = r.get("params")
-    print(params)
-
     try:
-        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
-        cur = conn.cursor()
+        return_token = auth.verify_autentication_api(request.args['token'])
+        if 'autenticado' in return_token:
+            print('autenticado')
+        else:
+            return jsonify({'erro': 'Necessario estar logado'})
+        r = request.get_json()
+        params = r.get("params")
         intervalo = params.get('intervalo_seconds')
         if params.get('intervalo_seconds') < 60:
             intervalo = 60
+    except:
+        return jsonify({'erro': '´Parametros invalidos'})
+    try:
+        conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
+        cur = conn.cursor()
+
 
         cur.execute(
             "UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
@@ -543,9 +552,16 @@ def silenciaralertas():
 @app.route('/silenciaralertasapi', methods=['GET'])
 def silenciaralertasapi():
     try:
+        return_token = auth.verify_autentication_api(request.args['token'])
+        if 'autenticado' in return_token:
+            print('autenticado')
+        else:
+            return jsonify({'erro': 'Necessario estar logado'})
+    except:
+        return jsonify({'erro': '´Parametros invalidos'})
+    try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-        print('231')
         cur.execute("UPDATE Alerta SET confirmado = '1' WHERE confirmado = '0';")
         conn.commit()
         cur.close()
