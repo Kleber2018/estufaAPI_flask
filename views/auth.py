@@ -29,26 +29,25 @@ def create_jwt(payload):
 
 
 def verify_and_decode_jwt(jwt):
-    b64_header, b64_payload, b64_signature = jwt.split('.')
-    b64_signature_checker = base64.urlsafe_b64encode(
-        hmac.new(
-            key=secret_key.encode(),
-            msg=f'{b64_header}.{b64_payload}'.encode(),
-            digestmod=hashlib.sha256
-        ).digest()
-    ).decode()
-
-    # payload extraido antes para checar o campo 'exp'
-    payload = json.loads(base64.urlsafe_b64decode(b64_payload))
-    unix_time_now = datetime.datetime.now().timestamp()
-
-    if payload.get('exp') and payload['exp'] < unix_time_now:
-        raise Exception('Token expirado')
-
-    if b64_signature_checker != b64_signature:
-        raise Exception('Assinatura invalida')
-
-    return payload
+    try:
+        b64_header, b64_payload, b64_signature = jwt.split('.')
+        b64_signature_checker = base64.urlsafe_b64encode(
+            hmac.new(
+                key=secret_key.encode(),
+                msg=f'{b64_header}.{b64_payload}'.encode(),
+                digestmod=hashlib.sha256
+            ).digest()
+        ).decode()
+        # payload extraido antes para checar o campo 'exp'
+        payload = json.loads(base64.urlsafe_b64decode(b64_payload))
+        unix_time_now = datetime.datetime.now().timestamp()
+        if payload.get('exp') and payload['exp'] < unix_time_now:
+            raise Exception('Token expirado')
+        if b64_signature_checker != b64_signature:
+            raise Exception('Assinatura invalida')
+        return payload
+    except:
+        return {'erro': 'Token invalido'}
 
 
 def autentication_api(user, senha):

@@ -64,12 +64,21 @@ class Config:
 # PARA ALTERAR DATATIME DO RASPBERRY - http://127.0.0.1:5000/updatedatasistema?datetime="Mon Aug 28 20:10:11 UTC-3 2019"
 @app.route('/updatedatasistema', methods=['GET', ])
 def updatedatasistema():
+    try:
+        datetime_request = request.args['datetime']
+        return_token = auth.verify_autentication_api(request.args['token'])
+        if 'autenticado' in return_token:
+            print('autenticado')
+        else:
+            return {'erro': 'Necessario estar logado'}
+    except:
+        return {'erro': 'Necessario estar logado'}
     import os
     from datetime import datetime
     try:
         # c = os.popen('sudo date -s "Mon Aug 28 20:10:11 UTC-3 2019"')
-        print(f"sudo date -s  {request.args['datetime']}")
-        c = os.popen(f"sudo date -s  {request.args['datetime']}")
+        print(f"sudo date -s  {datetime_request}")
+        c = os.popen(f"sudo date -s  {datetime_request}")
         c.read()
         c.close()
         now = datetime.now()
@@ -398,9 +407,6 @@ def loginapi():
             return {'erro': 'Usuario invalido!'}
     else:
         return {'erro': 'Senha invalida!'}
-
-
-
 
 
 # configuração da rota logout
