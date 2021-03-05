@@ -3,6 +3,11 @@
     <form action="{{ url_for('salvarconfig') }}" method="post">
         <fieldset>
           <div class="form-group">
+            <label for="etapa">Intervalo de medicao em segundos</label>
+            <input type="number" id="etapa" name="etapa" value={{ config.etapa }} class="form-control" required>
+              <span>Personalizada, Amarelação, Murchamento,</span>
+          </div>
+          <div class="form-group">
             <label for="intervalo">Intervalo de medicao em segundos</label>
             <input type="number" id="intervalo" name="intervalo" value={{ config.intervalo_seconds }} class="form-control" required>
               <span>5min:300, 1hora: 3600</span>

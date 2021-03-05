@@ -43,7 +43,8 @@ INSERT INTO Medicao(identificacao, temperatura, umidade, oculto, created) VALUES
 
 
 CREATE TABLE Config (
-id_config VARCHAR(50),
+id_config VARCHAR(20),
+etapa VARCHAR(20),
 intervalo_seconds INTEGER,
 temp_min DECIMAL(4,1),
 temp_max DECIMAL(4,1),
@@ -54,7 +55,7 @@ obs VARCHAR(250),
 PRIMARY KEY (id_config)
 );
 
-INSERT INTO Config(id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs) VALUES ('default', 200, 18.2, 25.2, 50.7, 90, now(), 'Configuração padrão, intervalo é o tempo para cada medicao');
+INSERT INTO Config(id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs) VALUES ('default','Personalizada', 200, 18.2, 25.2, 50.7, 90, now(), 'Configuração padrão, intervalo é o tempo para cada medicao');
 
 CREATE TABLE Alerta (
 id_alerta INTEGER NOT NULL AUTO_INCREMENT,

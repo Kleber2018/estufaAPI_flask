@@ -274,11 +274,12 @@ def apiconfig():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
         cur.execute(
-            "SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
+            "SELECT id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
         configs = []
-        for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+        for id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
             configs.append(
                 {'id_config': id_config,
+                 'etapa': etapa,
                  'intervalo_seconds': int(intervalo_seconds),
                  'temp_min': float(temp_min),
                  'temp_max': float(temp_max),
@@ -331,10 +332,8 @@ def criar():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-
         login = request.form['login'],
         senha = request.form['Senha'],
-
         cur.execute("INSERT INTO Usuario(login, Senha, Nome, Telefone, Email, Privilegios) VALUES (?, ?, ?, ?, ?, ?);",
                     (
                         login.lower(),
@@ -427,10 +426,10 @@ def config():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
         cur.execute(
-            "SELECT id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
+            "SELECT id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs  FROM Config")
         config = ''
-        for id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
-            config = Config(id_config, int(intervalo_seconds), float(temp_min), float(temp_max), float(umid_min),
+        for id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+            config = Config(id_config, etapa, int(intervalo_seconds), float(temp_min), float(temp_max), float(umid_min),
                             float(umid_max), f"{updated}", obs)
         cur.close()
         conn.close()
@@ -455,8 +454,9 @@ def salvarconfig():
         if request.form['intervalo'] < 60:
             intervalo = 60
         cur.execute(
-            "UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
+            "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
+                request.form['etapa'],
                 intervalo,
                 request.form['temperaturaMinima'],
                 request.form['temperaturaMaxima'],
@@ -500,16 +500,17 @@ def apisalvarconfig():
         umid_min = request.json['config']['umid_min']
         umid_max = request.json['config']['umid_max']
         obs = request.json['config']['obs']
+        etapa = request.json['config']['etapa']
     except:
         return jsonify({'erro': '´Parametros invalidos'})
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
 
-
         cur.execute(
-            "UPDATE Config SET intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
+            "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
+                etapa,
                 intervalo,
                 temp_min,
                 temp_max,
@@ -589,23 +590,27 @@ def silenciaralertasapi():
 ## API para deletar medições
 @app.route('/apiocultarmedicoes', methods=['GET', ])
 def apiocultarmedicoes():
-    # print(request.args['id_medicao'])
+    try:
+        if 'token' in request.json:
+            return_token = auth.verify_autentication_api(request.json['token'])
+            if 'autenticado' in return_token:
+                print('autenticado')
+            else:
+                return jsonify({'erro': 'Necessario estar logado!'})
+        else:
+            return jsonify({'erro': 'Necessario estar logado!'})
+        id = request.args['id']
+    except:
+        return jsonify({'erro': '´Parametros invalidos'})
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
-        # r = request.get_json()
-        # params = r.get("params")
-
-        # print(params)
-
-        # id = f"{params.get('id_medicao')}"
-
-        print(f"VALOR DE N: {request.args['id']}")
+        print(f"VALOR DE N: {id}")
         cur.execute(
             "UPDATE Medicao SET oculto = ? WHERE id_medicao = ?;",
             (
                 '9',
-                request.args['id']
+                id
             ))
         conn.commit()
         cur.close()
