@@ -359,7 +359,7 @@ def criar():
     return redirect(url_for('index'))
 
 
-# configuração da rota login
+# configuração da rota login .
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
