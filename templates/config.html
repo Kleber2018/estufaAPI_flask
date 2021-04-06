@@ -3,8 +3,8 @@
     <form action="{{ url_for('salvarconfig') }}" method="post">
         <fieldset>
           <div class="form-group">
-            <label for="etapa">Intervalo de medicao em segundos</label>
-            <input type="number" id="etapa" name="etapa" value={{ config.etapa }} class="form-control" required>
+            <label for="etapa">Etapa</label>
+            <input type="text" id="etapa" name="etapa" value={{ config.etapa }} class="form-control" required>
               <span>Personalizada, Amarelação, Murchamento,</span>
           </div>
           <div class="form-group">
@@ -33,7 +33,7 @@
 
         <div class="form-group">
             <label for="obs">Observação</label>
-            <input type="number" id="obs" name="obs" value={{ config.obs }} class="form-control">
+            <input type="text" id="obs" name="obs" value={{ config.obs }} class="form-control">
           </div>
 
           <button type="submit" class="btn btn-primary btn-salvar">Salvar</button>

@@ -50,8 +50,9 @@ class Medicao:
 
 
 class Config:
-    def __init__(self, id_config, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs):
+    def __init__(self, id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs):
         self.id_config = id_config
+        self.etapa = etapa
         self.intervalo_seconds = intervalo_seconds
         self.temp_min = temp_min
         self.temp_max = temp_max
@@ -77,8 +78,8 @@ def updatedatasistema():
     from datetime import datetime
     try:
         # c = os.popen('sudo date -s "Mon Aug 28 20:10:11 UTC-3 2019"')
-        print(f"sudo date -s  {datetime_request}")
-        c = os.popen(f"sudo date -s  {datetime_request}")
+        print(f"sudo date -s  '{datetime_request}'")
+        c = os.popen(f"sudo date -s '{datetime_request}'")
         c.read()
         c.close()
         now = datetime.now()
@@ -450,9 +451,13 @@ def salvarconfig():
     try:
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
+
         intervalo = request.form['intervalo']
-        if request.form['intervalo'] < 60:
+        print(intervalo)
+        if int(intervalo) < 60:
             intervalo = 60
+
+        print(intervalo)
         cur.execute(
             "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
