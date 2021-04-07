@@ -50,12 +50,13 @@ temp_min DECIMAL(4,1),
 temp_max DECIMAL(4,1),
 umid_min DECIMAL(4,1),
 umid_max DECIMAL(4,1),
+escala_temp VARCHAR(1),
 updated DATETIME,
 obs VARCHAR(250),
 PRIMARY KEY (id_config)
 );
 
-INSERT INTO Config(id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs) VALUES ('default','Personalizada', 200, 18.2, 25.2, 50.7, 90, now(), 'Configuração padrão, intervalo é o tempo para cada medicao');
+INSERT INTO Config(id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, escala_temp, updated, obs) VALUES ('default','Personalizada', 200, 18.2, 25.2, 50.7, 90, 'F', now(), 'Configuração padrão, intervalo é o tempo para cada medicao');
 
 CREATE TABLE Alerta (
 id_alerta INTEGER NOT NULL AUTO_INCREMENT,

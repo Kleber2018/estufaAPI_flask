@@ -16,6 +16,23 @@ app.run(host='0.0.0.0', port=8080)
 para acessar por outro computador conectado na mesma rede: ip:/rota
 ex: 192.168.0.101:8080/teste
 
+## MariaDB
+
+iniciar: sudo /etc/init.d/mysql start
+Finalizar: sudo /etc/init.d/mysql stop
+Acessar: sudo mysql -u root -p
+SQL:
+Consultando
+
+    SHOW databases;
+    SHOW tables;
+    
+SELECT * FROM estufa.Medicao;
+
+SELECT * FROM estufa.Usuario;
+
+DROP TABLE nome_tabela;
+
 
 ## Autostart no Raspbian
 
@@ -36,6 +53,7 @@ Abrir editor vim com o comando: vim /etc/rc.local
 
 
 ##documentações
+
 
 Datas no MARIADB:
 https://mariadb.com/kb/en/date_format/
