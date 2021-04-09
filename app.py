@@ -50,7 +50,7 @@ class Medicao:
 
 
 class Config:
-    def __init__(self, id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs):
+    def __init__(self, id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, escala_temp, updated, obs):
         self.id_config = id_config
         self.etapa = etapa
         self.intervalo_seconds = intervalo_seconds
@@ -58,6 +58,7 @@ class Config:
         self.temp_max = temp_max
         self.umid_min = umid_min
         self.umid_max = umid_max
+        self.escala_temp = escala_temp
         self.updated = updated
         self.obs = obs
 
@@ -275,9 +276,9 @@ def apiconfig():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
         cur.execute(
-            "SELECT id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
+            "SELECT id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, escala_temp, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs   FROM Config")
         configs = []
-        for id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+        for id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, escala_temp, updated, obs in cur:
             configs.append(
                 {'id_config': id_config,
                  'etapa': etapa,
@@ -286,6 +287,7 @@ def apiconfig():
                  'temp_max': float(temp_max),
                  'umid_min': float(umid_min),
                  'umid_max': float(umid_max),
+                 'escala_temp': escala_temp,
                  'updated': f"{updated}",
                  'obs': obs})
         cur.close()
@@ -427,11 +429,11 @@ def config():
         conn = mariadb.connect(user=user, password=password, host=host, port=port, database=database)
         cur = conn.cursor()
         cur.execute(
-            "SELECT id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs  FROM Config")
+            "SELECT id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, escala_temp, DATE_FORMAT(updated, '%d/%m/%Y-%H:%i'), obs  FROM Config")
         config = ''
-        for id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, updated, obs in cur:
+        for id_config, etapa, intervalo_seconds, temp_min, temp_max, umid_min, umid_max, escala_temp, updated, obs in cur:
             config = Config(id_config, etapa, int(intervalo_seconds), float(temp_min), float(temp_max), float(umid_min),
-                            float(umid_max), f"{updated}", obs)
+                            float(umid_max), str(escala_temp), str(updated), obs)
         cur.close()
         conn.close()
     except mariadb.Error as e:
@@ -459,7 +461,7 @@ def salvarconfig():
 
         print(intervalo)
         cur.execute(
-            "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
+            "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, escala_temp = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
                 request.form['etapa'],
                 intervalo,
@@ -467,6 +469,7 @@ def salvarconfig():
                 request.form['temperaturaMaxima'],
                 request.form['umidadeMinima'],
                 request.form['umidadeMaxima'],
+                request.form['escala_temp'],                
                 request.form['obs']
             ))
         conn.commit()
@@ -504,6 +507,7 @@ def apisalvarconfig():
         temp_max = request.json['config']['temp_max']
         umid_min = request.json['config']['umid_min']
         umid_max = request.json['config']['umid_max']
+        escala_temp = request.json['config']['escala_temp']
         obs = request.json['config']['obs']
         etapa = request.json['config']['etapa']
     except:
@@ -513,7 +517,7 @@ def apisalvarconfig():
         cur = conn.cursor()
 
         cur.execute(
-            "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, updated = now(), obs = ? WHERE id_config = 'default';",
+            "UPDATE Config SET etapa = ?, intervalo_seconds= ?, temp_min = ?, temp_max = ?, umid_min = ?, umid_max = ?, escala_temp = ?, updated = now(), obs = ? WHERE id_config = 'default';",
             (
                 etapa,
                 intervalo,
@@ -521,6 +525,7 @@ def apisalvarconfig():
                 temp_max,
                 umid_min,
                 umid_max,
+                escala_temp,
                 obs
             ))
         conn.commit()
