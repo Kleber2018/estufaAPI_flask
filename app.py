@@ -104,7 +104,7 @@ def scan():
         IP = '127.0.0.1'
     finally:
         s.close()
-    return jsonify({'retorno': f"{IP}", 'datetime': f"{now}"})  # ip do raspberry
+    return jsonify({'retorno': f"{IP}", 'datetime': f"{now}", 'nome': 'Estufa 1'})  # ip do raspberry
     # return jsonify({'retorno' : f"{request.remote_addr}"}) #ip do requisitante
 
 
