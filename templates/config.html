@@ -8,6 +8,11 @@
               <span>Personalizada, Amarelação, Murchamento,</span>
           </div>
           <div class="form-group">
+            <label for="escala_temp">Escala de Temperatura: Celsius ou Fahrenheit</label>
+            <input type="text" id="escala_temp" name="escala_temp" value={{ config.escala_temp }} class="form-control" required>
+              <span>F, C</span>
+          </div>
+          <div class="form-group">
             <label for="intervalo">Intervalo de medicao em segundos</label>
             <input type="number" id="intervalo" name="intervalo" value={{ config.intervalo_seconds }} class="form-control" required>
               <span>5min:300, 1hora: 3600</span>
